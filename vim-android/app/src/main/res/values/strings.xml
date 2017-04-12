@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Vimdroid</string>
+    <string name="error_window_inspector_not_prepared">窗口检测服务未就绪</string>
+    <string name="error_no_window_attach_permission">无悬浮窗权限</string>
+    <string name="please_wait">请稍后...</string>
+</resources>
