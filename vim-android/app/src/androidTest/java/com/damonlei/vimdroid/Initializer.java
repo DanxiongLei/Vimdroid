@@ -39,6 +39,5 @@ public class Initializer {
         Looper.loop();
         context.unbindService(conn);
         context.stopService(intent);
-        Timber.d("device controller end");
     }
 }

@@ -7,8 +7,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.damonlei.vimdroid.command.EnsurePrepareExecutor;
 import com.damonlei.vimdroid.command.PingExecutor;
-import com.damonlei.vimdroid.command.PrepareExecutor;
 import com.damonlei.vimdroid.command.ShutdownExecutor;
 import com.damonlei.vimdroid.command.base.CommandDispatcher;
 import com.damonlei.vimdroid.connect.Server;
@@ -38,20 +38,6 @@ public class AppService extends Service {
         }
     }
 
-    @Override
-    public int onStartCommand(final Intent intent, int flags, int startId) {
-        Timber.d("onStartCommand");
-        if (intent != null && intent.getBooleanExtra("test", false)) {
-            new Thread() {
-                @Override
-                public void run() {
-                    dispatcher.receive(intent.getIntExtra("cmdId", 0), intent.getStringExtra("data"));
-                }
-            }.start();
-        }
-        return START_STICKY;
-    }
-
     private void init() {
         // init ViewRoot to be attached on window
         WindowRoot.init(getApplication());
@@ -71,9 +57,10 @@ public class AppService extends Service {
 
     private void initCommandExecutor(CommandDispatcher dispatcher) {
         dispatcher.clear();
-        dispatcher.register(new PrepareExecutor(this));
+        EnsurePrepareExecutor ensurePrepareExecutor = new EnsurePrepareExecutor(this);
+        dispatcher.register(ensurePrepareExecutor);
         dispatcher.register(new PingExecutor());
-        dispatcher.register(new KeyBoardCommandExecutor());
+        dispatcher.register(new KeyBoardCommandExecutor(ensurePrepareExecutor));
         dispatcher.register(new ShutdownExecutor(this));
     }
 

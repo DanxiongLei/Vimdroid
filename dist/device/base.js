@@ -19,7 +19,15 @@ class DeviceBase {
                 reject(err);
             });
             socket.on("end", function () {
-                resolve(JSON.parse(response));
+                let json;
+                try {
+                    json = JSON.parse(response);
+                }
+                catch (err) {
+                    logger_1.default.log("JSON.parse error", response);
+                    throw err;
+                }
+                resolve(json);
             });
         });
     }

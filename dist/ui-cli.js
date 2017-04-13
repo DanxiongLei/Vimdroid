@@ -29,7 +29,7 @@ if (argv.force) {
 class TerminalUI extends user_interface_1.UserInterface {
     failure(msg) {
         console.log(msg);
-        CLI.end(outputErr);
+        CLI.terminate(outputNormal, outputErr);
     }
     message(msg) {
         console.log(msg);
@@ -56,13 +56,16 @@ class TerminalUI extends user_interface_1.UserInterface {
 const ui = new TerminalUI();
 CLI.start(ui, ui).catch(err => {
     outputErr(err);
-    CLI.end(outputErr);
+    CLI.terminate(outputNormal, outputErr);
 });
 process.stdin.on("keypress", (str, key) => {
     if (key.ctrl && key.name === 'c') {
-        CLI.end(outputErr);
+        CLI.terminate(outputNormal, outputErr);
     }
 });
+function outputNormal(text) {
+    console.log(text);
+}
 function outputErr(err) {
     if (err instanceof error_1.BaseError) {
         console.log(`${err.cause()} ${err.message} ${err.solution()}`);

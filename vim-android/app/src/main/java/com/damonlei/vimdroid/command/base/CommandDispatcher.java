@@ -12,7 +12,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -67,7 +66,7 @@ public class CommandDispatcher implements Server.DataReceivedListener {
         handler.post(task);
         Object respJson;
         try {
-            respJson = task.get(TIME_OUT_MILLISECONDS, TimeUnit.MILLISECONDS);
+            respJson = task.get();
         } catch (Exception e) {
             Timber.d("execute(90) error [%s]", e);
             throw e;
@@ -96,7 +95,52 @@ public class CommandDispatcher implements Server.DataReceivedListener {
     }
 
     private <E, R> E parseJson(String data, ICommandExecutor<E, R> executor) {
-        Type[] genericInterfaces = executor.getClass().getGenericInterfaces();
+        // 父类是否为CommandExecutorBase
+        Type hit = getTypeFromSuperClass(executor.getClass());
+        if (hit == null) {
+            // 是否继承ICommandExecutor接口
+            hit = getReqTypeFromGenericInterface(executor.getClass());
+        }
+        if (hit == null) {
+            throw new IllegalStateException("[CommandDispatcher.parseJson] Type not hit...");
+        }
+        Type[] arguments = ((ParameterizedType) hit)
+                .getActualTypeArguments();
+        Timber.d("parseJson(104) rawData = [%s], hit Type = [%s]", data, arguments[0]);
+        return Global.getGson().fromJson(data,
+                arguments[0]);
+    }
+
+    private Type getTypeFromSuperClass(Class clazz) {
+        Timber.d("getTypeFromSuperClass() called with: clazz = [" + clazz + "]");
+        Type type = clazz.getGenericSuperclass();
+        if (!(type instanceof ParameterizedType)) {
+            return null;
+        }
+        if (((ParameterizedType) type).getRawType() == CommandExecutorBase.class) {
+            return type;
+        }
+        return null;
+    }
+
+    // 希望能够递归的获取父类，找到是谁继承了ICommandExecutor接口，最终获得ICommandExecutor的类型参数
+    // 想法虽好，但是由于类型擦除，最终从接口中获得的只是Request参数（就是一个参数变量名）而不是传进来的实际参数
+    // 故而只能使用直接从BaseCommandExecutor中获取
+    /*private Type getTypeRecursionSuperClass(Class clazz) {
+        Timber.d("getTypeRecursionSuperClass() called with: clazz = [" + clazz + "]");
+        while (clazz != null && (clazz != Object.class)) {
+            Type hit = getReqTypeFromGenericInterface(clazz);
+            if (hit != null) {
+                return hit;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return null;
+    }*/
+
+    private Type getReqTypeFromGenericInterface(Class clazz) {
+        Timber.d("getReqTypeFromGenericInterface() called with: clazz = [" + clazz + "]");
+        Type[] genericInterfaces = clazz.getGenericInterfaces();
         Type hit = null;
         for (Type type : genericInterfaces) {
             if (!(type instanceof ParameterizedType)) {
@@ -107,14 +151,8 @@ public class CommandDispatcher implements Server.DataReceivedListener {
                 break;
             }
         }
-        if (hit == null) {
-            throw new IllegalStateException("Type not hit...");
-        }
-
-        Type[] arguments = ((ParameterizedType) hit)
-                .getActualTypeArguments();
-        return Global.getGson().fromJson(data,
-                arguments[0]);
+        Timber.d("getReqTypeFromGenericInterface() hit = " + hit);
+        return hit;
     }
 
     @Override

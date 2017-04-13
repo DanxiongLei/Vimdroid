@@ -25,11 +25,6 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.S;
 public class TagViewLogicTest {
 
     @Test
-    public void test() {
-        System.out.println("board = " + GsonLogic.getGson().fromJson("", Object.class));
-    }
-
-    @Test
     public void testGenerateKeyHintList() {
         Assert.assertArrayEquals("1", generateKeyHintList(1).toArray(), new String[]{S.getAsStr()});
         Assert.assertArrayEquals("2", generateKeyHintList(2).toArray(), new String[]{S.getAsStr(), A.getAsStr()});

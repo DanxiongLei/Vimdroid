@@ -98,7 +98,12 @@ class AndroidDevice extends base_1.DeviceBase {
                 }
                 if (retry > 0) {
                     retry--;
-                    setTimeout(handler, timeout);
+                    try {
+                        setTimeout(handler, timeout);
+                    }
+                    catch (err) {
+                        logger_1.default.error(err);
+                    }
                 }
                 else {
                     _reject(new error_1.SubcoreError("Could not connect with mobile."));
@@ -108,11 +113,18 @@ class AndroidDevice extends base_1.DeviceBase {
         return new Promise((resolve, reject) => {
             _resolve = resolve;
             _reject = reject;
-            setTimeout(handler, timeout);
+            try {
+                setTimeout(handler, timeout);
+            }
+            catch (err) {
+                logger_1.default.error(err);
+                _reject(err);
+            }
         });
     }
     tryToPing() {
         return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.log("ping...");
             let resp;
             try {
                 resp = yield this.protocol.ping();

@@ -9,10 +9,10 @@ import android.support.v4.content.ContextCompat;
 import com.damonlei.utils.ResourceHelper;
 import com.damonlei.vimdroid.Global;
 import com.damonlei.vimdroid.R;
-import com.damonlei.vimdroid.command.base.ICommandExecutor;
+import com.damonlei.vimdroid.command.base.CommandExecutorBase;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
-import com.damonlei.vimdroid.utils.PermissionActivity;
+import com.damonlei.vimdroid.utils.permission.PermissionActivity;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @time 2017/4/10
  * @email danxionglei@foxmail.com
  */
-public class PrepareExecutor implements ICommandExecutor<Object, Resp> {
+public class EnsurePrepareExecutor extends CommandExecutorBase<Object,Resp> {
 
     private Service context;
 
     private AtomicBoolean isUsed = new AtomicBoolean(false);
 
-    public PrepareExecutor(Service context) {
+    public EnsurePrepareExecutor(Service context) {
         this.context = context;
     }
 
@@ -54,7 +54,7 @@ public class PrepareExecutor implements ICommandExecutor<Object, Resp> {
             return Resp.failure(ResourceHelper.getString(context, R.string.error_window_inspector_not_prepared));
         }
         // 查看是否有悬浮窗权限
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.SYSTEM_ALERT_WINDOW) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED) {
             Future<Boolean> future = PermissionActivity.getPermission(context, Manifest.permission.SYSTEM_ALERT_WINDOW);
             if (future != null) {
                 boolean isSucceedToGetAllPermission = future.get();
@@ -63,6 +63,7 @@ public class PrepareExecutor implements ICommandExecutor<Object, Resp> {
                 }
             }
         }
+        isUsed.set(false);
         return Resp.SUCCESS_RESP;
     }
 }

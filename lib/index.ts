@@ -6,8 +6,9 @@ import * as keypress from "./io/keypress";
 import {UserInterface} from "./user-interface";
 import logger from "./util/logger";
 import {Resp} from "./device/base";
+import {strings} from "./res/string";
 
-let androidDevice;
+export let androidDevice;
 
 export const Config = {
     DEBUG: false,
@@ -40,9 +41,10 @@ async function keyObserve(key: KeyEvent) {
     logger.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
 }
 
-export function end(outputErr) {
+export function terminate(outputNormal, outputErr) {
+    outputNormal(strings.uiTerminate);
     process.stdin.removeAllListeners("keypress");
-    logger.log("CLI.end");
+    logger.log("CLI.terminate");
     androidDevice.protocol.shutdown().then(() => {
         process.exit(0);
     }).catch(err => {

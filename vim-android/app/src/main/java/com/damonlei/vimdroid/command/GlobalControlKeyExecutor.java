@@ -3,6 +3,7 @@ package com.damonlei.vimdroid.command;
 import android.os.Looper;
 
 import com.damonlei.vimdroid.command.base.CommandExecuteException;
+import com.damonlei.vimdroid.command.base.CommandExecutorBase;
 import com.damonlei.vimdroid.command.base.ICommandExecutor;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
@@ -22,7 +23,7 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.R;
  * @time 2017/4/11
  * @email danxionglei@foxmail.com
  */
-public class GlobalControlKeyExecutor implements ICommandExecutor<KeyRequest, Resp> {
+public class GlobalControlKeyExecutor extends CommandExecutorBase<KeyRequest, Resp> {
 
     @Override
     public int getType() {

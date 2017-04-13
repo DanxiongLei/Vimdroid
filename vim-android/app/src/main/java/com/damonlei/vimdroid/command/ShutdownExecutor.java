@@ -4,7 +4,7 @@ import android.app.Service;
 import android.os.Looper;
 
 import com.damonlei.vimdroid.Global;
-import com.damonlei.vimdroid.command.base.ICommandExecutor;
+import com.damonlei.vimdroid.command.base.CommandExecutorBase;
 import com.damonlei.vimdroid.command.base.Resp;
 
 /**
@@ -12,7 +12,7 @@ import com.damonlei.vimdroid.command.base.Resp;
  * @time 2017/4/11
  * @email danxionglei@foxmail.com
  */
-public class ShutdownExecutor implements ICommandExecutor<Object,Resp> {
+public class ShutdownExecutor extends CommandExecutorBase<Object, Resp> {
 
 
     private Service service;

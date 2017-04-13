@@ -27,7 +27,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".utils.PermissionActivity" />
+        <activity
+            android:name=".utils.permission.PermissionActivity"
+            android:process=":remote"
+            android:theme="@style/Theme.Transparent" />
 
     </application>
 

@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const android_1 = require("./device/android");
 const keypress = require("./io/keypress");
 const logger_1 = require("./util/logger");
-let androidDevice;
+const string_1 = require("./res/string");
 exports.Config = {
     DEBUG: false,
     FORCE_INSTALL_SUBCORE: false
@@ -19,9 +19,9 @@ exports.Config = {
 function start(ui, callback) {
     return __awaiter(this, void 0, void 0, function* () {
         keypress.emitKeypressEvents(keyObserve);
-        androidDevice = new android_1.AndroidDevice(ui);
-        androidDevice.registerCallback(callback);
-        let result = yield androidDevice.initialize();
+        exports.androidDevice = new android_1.AndroidDevice(ui);
+        exports.androidDevice.registerCallback(callback);
+        let result = yield exports.androidDevice.initialize();
         logger_1.default.log(result);
         return result;
     });
@@ -33,22 +33,23 @@ function keyObserve(key) {
         if (key.ctrl && key.name === 'c') {
             return;
         }
-        let resp = yield androidDevice.protocol.sendKeypress(key);
+        let resp = yield exports.androidDevice.protocol.sendKeypress(key);
         logger_1.default.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
     });
 }
-function end(outputErr) {
+function terminate(outputNormal, outputErr) {
+    outputNormal(string_1.strings.uiTerminate);
     process.stdin.removeAllListeners("keypress");
-    logger_1.default.log("CLI.end");
-    androidDevice.protocol.shutdown().then(() => {
+    logger_1.default.log("CLI.terminate");
+    exports.androidDevice.protocol.shutdown().then(() => {
         process.exit(0);
     }).catch(err => {
         outputErr(err);
         process.exit(0);
     });
-    androidDevice = null;
+    exports.androidDevice = null;
 }
-exports.end = end;
+exports.terminate = terminate;
 function settings() {
     return __awaiter(this, void 0, void 0, function* () {
     });

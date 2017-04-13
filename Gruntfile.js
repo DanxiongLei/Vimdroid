@@ -2,6 +2,16 @@
  * Created by ldx on 2017/4/10.
  */
 const path = require("path");
+let copyApkTaskFileTemplate = function (srcPattern, name) {
+    return {
+        expand: true,
+        nonull: true,
+        cwd: "<%= apk_path %>",
+        src: srcPattern,
+        dest: "./dist/res/apk/",
+        rename: (dest, src) => path.join(dest, name),
+    };
+};
 module.exports = function (grunt) {
     require("load-grunt-tasks")(grunt);
     grunt.initConfig({
@@ -27,41 +37,20 @@ module.exports = function (grunt) {
             }
         },
         clean: {
-            apk: ["<%= apk_path%>", "./lib/res/apk"],
+            apk: ["<%= apk_path%>", "./lib/res/apk", "./dist/res/apk"],
             dist: ["dist"],
             libjs: ["./lib/**/*.js", "!./lib/**/keypress.js", "./lib/**/*.js.map"]
         },
         copy: {
-            apk: {
-                files: [{
-                    expand: true,
-                    nonull: true,
-                    cwd: "<%= apk_path %>",
-                    src: "*[!est].apk",
-                    dest: "./lib/res/apk/",
-                    rename: (dest, src) => path.join(dest, "app.apk"),
-                }, {
-                    expand: true,
-                    nonull: true,
-                    cwd: "<%= apk_path %>",
-                    src: "*est.apk",
-                    dest: "./lib/res/apk/",
-                    rename: (dest, src) => path.join(dest, "app-server.apk")
-                }],
+            apkRelease: {
+                files: [
+                    copyApkTaskFileTemplate("*release.apk", "app.apk"),
+                    copyApkTaskFileTemplate("*est.apk", "app-server.apk")]
             },
-            dist: {
-                files: [{
-                    expand: true,
-                    cwd: "./lib",
-                    src: "**/*.js",
-                    dest: "./dist/",
-                    rename: (dest, src) => {
-                        console.log(dest);
-                        console.log(src);
-                        console.log(path.join(dest, src));
-                        return path.join(dest, src)
-                    }
-                }]
+            apkDebug: {
+                files: [
+                    copyApkTaskFileTemplate("*debug.apk", "app.apk"),
+                    copyApkTaskFileTemplate("*est.apk", "app-server.apk")]
             }
         },
         ts: {
@@ -70,10 +59,10 @@ module.exports = function (grunt) {
             }
         }
     });
-
+    grunt.registerTask("releaseApk", ["clean:apk", "shell:buildRelease", "shell:buildAndroidTest", "copy:apkRelease"]);
+    grunt.registerTask("debugApk", ["clean:apk", "shell:buildDebug", "shell:buildAndroidTest", "copy:apkDebug"]);
     grunt.registerTask("dist", ["clean:libjs", "clean:dist", "ts"]);
-    let moveApk = ["copy:apk"];
-    grunt.registerTask("release", ["clean:apk", "shell:buildRelease", "shell:buildAndroidTest"].concat(moveApk));
-    grunt.registerTask("debug", ["clean:apk", "shell:buildDebug", "shell:buildAndroidTest"].concat(moveApk));
+    grunt.registerTask("release", ["dist", "releaseApk"]);
+    grunt.registerTask("debug", ["dist", "debugApk"]);
     grunt.registerTask("default", "debug");
 };

@@ -118,7 +118,11 @@ export class AndroidDevice extends DeviceBase {
             }
             if (retry > 0) {
                 retry--;
-                setTimeout(handler, timeout);
+                try {
+                    setTimeout(handler, timeout);
+                } catch (err) {
+                    logger.error(err);
+                }
             } else {
                 _reject(new SubcoreError("Could not connect with mobile."));
             }
@@ -127,11 +131,17 @@ export class AndroidDevice extends DeviceBase {
         return new Promise((resolve: (x: Resp<string>) => {}, reject) => {
             _resolve = resolve;
             _reject = reject;
-            setTimeout(handler, timeout);
+            try {
+                setTimeout(handler, timeout);
+            } catch (err) {
+                logger.error(err);
+                _reject(err);
+            }
         });
     }
 
     private async tryToPing() {
+        logger.log("ping...");
         let resp;
         try {
             resp = await this.protocol.ping();

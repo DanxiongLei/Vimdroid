@@ -10,6 +10,8 @@ import android.os.Looper;
 
 public interface ICommandExecutor<Request, Response> {
 
+    int allowLongTimeExecute();
+
     int getType();
 
     // 如果为null，在当前线程(即IO线程)中执行，不进行线程切换

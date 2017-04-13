@@ -14,7 +14,7 @@ import com.damonlei.utils.Utils;
 import com.damonlei.vimdroid.Global;
 import com.damonlei.vimdroid.R;
 import com.damonlei.vimdroid.command.base.CommandExecuteException;
-import com.damonlei.vimdroid.command.base.ICommandExecutor;
+import com.damonlei.vimdroid.command.base.CommandExecutorBase;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
 import com.damonlei.vimdroid.device.WindowRoot;
@@ -32,7 +32,7 @@ import timber.log.Timber;
  * @time 2017/3/2
  * @email danxionglei@foxmail.com
  */
-public class TagViewExecutor implements IAttachableView, ICommandExecutor<KeyRequest, Resp> {
+public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> implements IAttachableView {
 
     private ViewGroup mViewRoot;
 

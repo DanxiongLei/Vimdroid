@@ -33,4 +33,5 @@ export const strings = {
     uiOptionDebug: "以调试模式启动程序。",
     uiOptionHelp: "显示帮助信息",
     uiOptionVersion: "显示版本号",
+    uiTerminate: "程序已终止..."
 };
