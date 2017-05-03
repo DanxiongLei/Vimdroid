@@ -14,6 +14,7 @@ const adb = require('adbkit');
 export class AndroidDevice extends DeviceBase {
 
     private static adbClient: any;
+
     private device: AndroidDeviceModel;
 
     private uiCallback: AndroidCallback;
@@ -22,12 +23,13 @@ export class AndroidDevice extends DeviceBase {
 
     private initialized: boolean = false;
 
-    protocol: AndroidProtocol;
-
     constructor(ui) {
         super();
-        this.protocol = new AndroidProtocol(this);
         this.userInterface = ui;
+    }
+
+    get protocol() {
+        return new AndroidProtocol(this);
     }
 
     registerCallback(callback: AndroidCallback) {
@@ -41,8 +43,8 @@ export class AndroidDevice extends DeviceBase {
      * 4. 建立并测试连接
      * 5. 成功/失败
      */
-    async initialize() {
-        logger.log(`initialize`);
+    async onCreate() {
+        logger.log(`onCreate`);
         // 搜索设备
         let device = await this.chooseDevice();
         if (!device) {
@@ -118,11 +120,7 @@ export class AndroidDevice extends DeviceBase {
             }
             if (retry > 0) {
                 retry--;
-                try {
-                    setTimeout(handler, timeout);
-                } catch (err) {
-                    logger.error(err);
-                }
+                setTimeout(handler, timeout);
             } else {
                 _reject(new SubcoreError("Could not connect with mobile."));
             }
@@ -252,17 +250,13 @@ export class AndroidDevice extends DeviceBase {
         return AndroidDevice.adbClient;
     }
 
-    isInitialized() {
-        return this.initialized;
-    }
-
-    isConnected() {
-        return this.protocol.ping();
-    }
-
     protected async communicate<T>(id: number, entity?: string): Promise<Resp<T>> {
         const socket = await AndroidDevice.getAdbClient().openTcp(this.device.id, constants.DEVICE_PORT);
         return DeviceBase.__communicate__<T>(socket, id, entity);
+    }
+
+    onDestroy() {
+
     }
 }
 

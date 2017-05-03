@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const string_1 = require("./res/string");
 const logger_1 = require("./util/logger");
@@ -29,7 +37,7 @@ if (argv.force) {
 class TerminalUI extends user_interface_1.UserInterface {
     failure(msg) {
         console.log(msg);
-        CLI.terminate(outputNormal, outputErr);
+        terminate().then();
     }
     message(msg) {
         console.log(msg);
@@ -54,18 +62,43 @@ class TerminalUI extends user_interface_1.UserInterface {
     }
 }
 const ui = new TerminalUI();
-CLI.start(ui, ui).catch(err => {
-    outputErr(err);
-    CLI.terminate(outputNormal, outputErr);
+function start() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let isErr = false;
+        try {
+            yield CLI.start(ui, ui);
+        }
+        catch (err) {
+            outputErr(err);
+            isErr = true;
+        }
+        if (isErr) {
+            yield terminate();
+        }
+    });
+}
+function terminate() {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(string_1.strings.uiTerminate);
+        logger_1.default.log("terminate...");
+        try {
+            yield CLI.terminate();
+        }
+        catch (err) {
+            logger_1.default.error(err);
+        }
+        finally {
+            process.exit(0);
+        }
+    });
+}
+start().then(() => {
 });
 process.stdin.on("keypress", (str, key) => {
     if (key.ctrl && key.name === 'c') {
-        CLI.terminate(outputNormal, outputErr);
+        terminate().then();
     }
 });
-function outputNormal(text) {
-    console.log(text);
-}
 function outputErr(err) {
     if (err instanceof error_1.BaseError) {
         console.log(`${err.cause()} ${err.message} ${err.solution()}`);

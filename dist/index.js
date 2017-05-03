@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const android_1 = require("./device/android");
 const keypress = require("./io/keypress");
 const logger_1 = require("./util/logger");
-const string_1 = require("./res/string");
 exports.Config = {
     DEBUG: false,
     FORCE_INSTALL_SUBCORE: false
@@ -21,7 +20,7 @@ function start(ui, callback) {
         keypress.emitKeypressEvents(keyObserve);
         exports.androidDevice = new android_1.AndroidDevice(ui);
         exports.androidDevice.registerCallback(callback);
-        let result = yield exports.androidDevice.initialize();
+        let result = yield exports.androidDevice.create();
         logger_1.default.log(result);
         return result;
     });
@@ -33,21 +32,26 @@ function keyObserve(key) {
         if (key.ctrl && key.name === 'c') {
             return;
         }
-        let resp = yield exports.androidDevice.protocol.sendKeypress(key);
-        logger_1.default.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
+        try {
+            let resp = yield exports.androidDevice.protocol.sendKeypress(key);
+            logger_1.default.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
+        }
+        catch (err) {
+            logger_1.default.error(err, "keyObserve protocol.sendKeyPress Error");
+        }
     });
 }
-function terminate(outputNormal, outputErr) {
-    outputNormal(string_1.strings.uiTerminate);
-    process.stdin.removeAllListeners("keypress");
-    logger_1.default.log("CLI.terminate");
-    exports.androidDevice.protocol.shutdown().then(() => {
-        process.exit(0);
-    }).catch(err => {
-        outputErr(err);
-        process.exit(0);
+function terminate() {
+    return __awaiter(this, void 0, void 0, function* () {
+        process.stdin.removeAllListeners("keypress");
+        logger_1.default.log("CLI.terminate");
+        try {
+            yield exports.androidDevice.protocol.shutdown();
+        }
+        catch (err) {
+        }
+        exports.androidDevice = null;
     });
-    exports.androidDevice = null;
 }
 exports.terminate = terminate;
 function settings() {

@@ -6,7 +6,6 @@ import * as keypress from "./io/keypress";
 import {UserInterface} from "./user-interface";
 import logger from "./util/logger";
 import {Resp} from "./device/base";
-import {strings} from "./res/string";
 
 export let androidDevice;
 
@@ -19,7 +18,7 @@ export async function start(ui: UserInterface, callback: AndroidCallback) {
     keypress.emitKeypressEvents(keyObserve);
     androidDevice = new AndroidDevice(ui);
     androidDevice.registerCallback(callback);
-    let result = await androidDevice.initialize();
+    let result = await androidDevice.create();
     logger.log(result);
     return result;
 }
@@ -37,20 +36,21 @@ async function keyObserve(key: KeyEvent) {
     if (key.ctrl && key.name === 'c') {
         return;
     }
-    let resp: Resp<string> = await androidDevice.protocol.sendKeypress(key);
-    logger.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
+    try {
+        let resp: Resp<string> = await androidDevice.protocol.sendKeypress(key);
+        logger.log(`receive resp(${JSON.stringify(resp)}) for keyEvent(${key.name})`);
+    } catch (err) {
+        logger.error(err, "keyObserve protocol.sendKeyPress Error");
+    }
 }
 
-export function terminate(outputNormal, outputErr) {
-    outputNormal(strings.uiTerminate);
+export async function terminate() {
     process.stdin.removeAllListeners("keypress");
     logger.log("CLI.terminate");
-    androidDevice.protocol.shutdown().then(() => {
-        process.exit(0);
-    }).catch(err => {
-        outputErr(err);
-        process.exit(0);
-    });
+    try {
+        await androidDevice.protocol.shutdown();
+    } catch (err) {
+    }
     androidDevice = null;
 }
 

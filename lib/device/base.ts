@@ -7,7 +7,7 @@ import logger from "../util/logger";
 
 /**
  * UIDevice
- *  - initialize 初始化
+ *  - onCreate 初始化
  *  - isInitialized  判断是否初始化
  *  - communicate(id, string) : string
  *  - isConnected 判断是否仍在连接状态
@@ -16,13 +16,21 @@ import logger from "../util/logger";
  */
 export abstract class DeviceBase {
 
-    protocol: ProtocolBase;
+    public async create() {
+        return await this.onCreate();
+    }
 
-    abstract initialize();
+    protected async onCreate() {
+        return true;
+    }
 
-    abstract isInitialized();
+    abstract get protocol() : ProtocolBase;
 
-    abstract isConnected();
+    abstract onDestroy();
+
+    protected finish() {
+
+    }
 
     protected abstract communicate<T>(id: number, entity?: string): Promise<Resp<T>>;
 

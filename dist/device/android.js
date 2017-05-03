@@ -19,15 +19,17 @@ class AndroidDevice extends base_1.DeviceBase {
     constructor(ui) {
         super();
         this.initialized = false;
-        this.protocol = new AndroidProtocol(this);
         this.userInterface = ui;
+    }
+    get protocol() {
+        return new AndroidProtocol(this);
     }
     registerCallback(callback) {
         this.uiCallback = callback;
     }
-    initialize() {
+    onCreate() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.default.log(`initialize`);
+            logger_1.default.log(`onCreate`);
             let device = yield this.chooseDevice();
             if (!device) {
                 return false;
@@ -98,12 +100,7 @@ class AndroidDevice extends base_1.DeviceBase {
                 }
                 if (retry > 0) {
                     retry--;
-                    try {
-                        setTimeout(handler, timeout);
-                    }
-                    catch (err) {
-                        logger_1.default.error(err);
-                    }
+                    setTimeout(handler, timeout);
                 }
                 else {
                     _reject(new error_1.SubcoreError("Could not connect with mobile."));
@@ -241,17 +238,13 @@ class AndroidDevice extends base_1.DeviceBase {
         }
         return AndroidDevice.adbClient;
     }
-    isInitialized() {
-        return this.initialized;
-    }
-    isConnected() {
-        return this.protocol.ping();
-    }
     communicate(id, entity) {
         return __awaiter(this, void 0, void 0, function* () {
             const socket = yield AndroidDevice.getAdbClient().openTcp(this.device.id, constants_1.default.DEVICE_PORT);
             return base_1.DeviceBase.__communicate__(socket, id, entity);
         });
+    }
+    onDestroy() {
     }
 }
 exports.AndroidDevice = AndroidDevice;

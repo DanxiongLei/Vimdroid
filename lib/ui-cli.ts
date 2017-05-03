@@ -35,7 +35,7 @@ if (argv.force) {
 class TerminalUI extends UserInterface implements AndroidCallback {
     failure(msg) {
         console.log(msg);
-        CLI.terminate(outputNormal, outputErr);
+        terminate().then();
     }
 
     message(msg) {
@@ -69,20 +69,40 @@ class TerminalUI extends UserInterface implements AndroidCallback {
 
 const ui = new TerminalUI();
 
-CLI.start(ui, ui).catch(err => {
-    outputErr(err);
-    CLI.terminate(outputNormal, outputErr);
+async function start() {
+    let isErr = false;
+    try {
+        await CLI.start(ui, ui);
+    } catch (err) {
+        outputErr(err);
+        isErr = true;
+    }
+    if (isErr) {
+        await terminate();
+    }
+}
+
+async function terminate() {
+    console.log(strings.uiTerminate);
+    logger.log("terminate...");
+    try {
+        await CLI.terminate();
+    } catch (err) {
+        logger.error(err);
+    } finally {
+        process.exit(0);
+    }
+}
+
+start().then(() =>{
+    // do nothing;
 });
 
 process.stdin.on("keypress", (str, key) => {
     if (key.ctrl && key.name === 'c') {
-        CLI.terminate(outputNormal, outputErr);
+        terminate().then();
     }
 });
-
-function outputNormal(text) {
-    console.log(text);
-}
 
 function outputErr(err) {
     if (err instanceof BaseError) {
