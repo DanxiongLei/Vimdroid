@@ -1,6 +1,7 @@
 package com.damonlei.vimdroid.view;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.support.v4.util.Pools.SynchronizedPool;
@@ -44,10 +45,23 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
 
     private TagViewLogic mTagViewLogic;
 
+    private INodeChoosedCallback mNodeChoosedCallback;
+
+    /**
+     * 候选的node节点，如果设置了候选节点，那么就使用TagView的方式选择候选节点。否则，则默认自动获取Clickable的节点。
+     */
+    private List<AccessibilityNodeInfo> mCandidateNodesContainer;
+
+    /**
+     * 暂存钩子任务的执行结果
+     */
+    private Resp pendingResp;
+
     public TagViewExecutor() {
         this(WindowRoot.getInstance());
     }
 
+    @SuppressWarnings("WeakerAccess")
     public TagViewExecutor(ViewGroup viewRoot) {
         setViewRoot(viewRoot);
         mTagViewLogic = new TagViewLogic(this);
@@ -76,10 +90,12 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
         if (!DeviceController.isInit()) {
             throw new CommandExecuteException("Window Inspector have not been prepared.");
         }
-        if (mTagViewLogic.process(data.name)) {
-            return Resp.SUCCESS_RESP;
+        pendingResp = null;
+        boolean ret = mTagViewLogic.process(data.name);
+        if (pendingResp != null) {
+            return pendingResp;
         }
-        return Resp.FAILURE_RESP;
+        return ret ? Resp.SUCCESS_RESP : Resp.FAILURE_RESP;
     }
 
     public interface Factory {
@@ -113,6 +129,47 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
         return mAttachedItemList;
     }
 
+    public void setCandidatesList(List<AccessibilityNodeInfo> candidates) {
+        this.mCandidateNodesContainer = candidates;
+    }
+
+    List<AccessibilityNodeInfo> getCandidatesNodeList() {
+        if (mCandidateNodesContainer == null) {
+            mCandidateNodesContainer = getClickableNodesCandidates();
+        }
+        return mCandidateNodesContainer;
+    }
+
+    public void setNodeChoosedCallback(INodeChoosedCallback callback) {
+        this.mNodeChoosedCallback = callback;
+    }
+
+    boolean performAction(AccessibilityNodeInfo nodeInfo) {
+        if (mNodeChoosedCallback != null) {
+            pendingResp = mNodeChoosedCallback.nodeChoosed(nodeInfo);
+            // 当该Callback任务完成后，清理该Callback
+            mNodeChoosedCallback = null;
+            if (mCandidateNodesContainer != null) {
+                mCandidateNodesContainer.clear();
+                mCandidateNodesContainer = null;
+            }
+            return true;
+        }
+        // use click action as default.
+        return performClickAction(nodeInfo);
+    }
+
+    void cancel() {
+        if (mNodeChoosedCallback != null) {
+            pendingResp = mNodeChoosedCallback.nodeChoosed(null);
+            mNodeChoosedCallback = null;
+            if (mCandidateNodesContainer != null) {
+                mCandidateNodesContainer.clear();
+                mCandidateNodesContainer = null;
+            }
+        }
+    }
+
     ITagViewItem getValidTagItem() {
         ITagViewItem item = mViewPool.acquire();
         if (item == null) {
@@ -134,29 +191,30 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
         mKeyBoardController.setState(KeyBoardCommandExecutor.STATE_TAG_VIEW_ATTACHED);
     }
 
-    void hit(ITagViewItem item) {
-        int x = item.getAbsoluteX() + (item.getItemWidth() >> 1);
-        int y = item.getAbsoluteY() + (item.getItemHeight() >> 1);
-        DeviceController.getInstance().click(x, y);
+    private boolean performClickAction(AccessibilityNodeInfo nodeInfo) {
+        Rect rect = new Rect();
+        nodeInfo.getBoundsInScreen(rect);
+        int x = rect.centerX();
+        int y = rect.centerY();
+        boolean result = DeviceController.getInstance().click(x, y);
         // 显示点击区域和点击点
         if (Global.SETTINGS.displayClickableRegion) {
-            ImageView v = new ImageView(mViewRoot.getContext());
+            ImageView clickPointRoundPointer = new ImageView(mViewRoot.getContext());
             Drawable round_pointer = ResourceHelper.getDrawable(mViewRoot.getContext(), R.drawable.round_pointer);
-            v.setImageDrawable(round_pointer);
+            clickPointRoundPointer.setImageDrawable(round_pointer);
             int halfDrawableWidth = round_pointer.getIntrinsicWidth() / 2;
-            ((WindowRoot) mViewRoot).addViewAtScreenCoordinate(v, x - halfDrawableWidth, y - halfDrawableWidth);
-            ImageView v2 = new ImageView(mViewRoot.getContext());
-            v2.setImageDrawable(ResourceHelper.getDrawable(mViewRoot.getContext(), R.drawable.rectangle_pointer));
-            v2.setMinimumWidth(item.getItemWidth());
-            v2.setMinimumHeight(item.getItemHeight());
-            ((WindowRoot) mViewRoot).addViewAtScreenCoordinate(v2, item.getAbsoluteX(), item.getAbsoluteY());
+            ((WindowRoot) mViewRoot).addViewAtScreenCoordinate(clickPointRoundPointer, x - halfDrawableWidth, y - halfDrawableWidth);
+            ImageView nodeInfoRectBounds = new ImageView(mViewRoot.getContext());
+            nodeInfoRectBounds.setImageDrawable(ResourceHelper.getDrawable(mViewRoot.getContext(), R.drawable.rectangle_pointer));
+            nodeInfoRectBounds.setMinimumWidth(rect.width());
+            nodeInfoRectBounds.setMinimumHeight(rect.height());
+            ((WindowRoot) mViewRoot).addViewAtScreenCoordinate(nodeInfoRectBounds, rect.left, rect.top);
         }
+
+        return result;
     }
 
-    void performAction(ITagViewItem item) {
-    }
-
-    List<AccessibilityNodeInfo> getClickableNodes() {
+    private List<AccessibilityNodeInfo> getClickableNodesCandidates() {
         List<AccessibilityNodeInfo> nodeInfos = null;
         nodeInfos = DeviceController.getInstance().getClickableNodes();
         if (nodeInfos == null) {
@@ -189,6 +247,7 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
 
         // event to KeyBoardController
         mKeyBoardController.setState(KeyBoardCommandExecutor.STATE_IDLE);
+
     }
 
 }

@@ -9,6 +9,7 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.damonlei.utils.ResourceHelper;
 import com.damonlei.vimdroid.R;
@@ -29,6 +30,8 @@ class TagViewViewItem extends AppCompatTextView implements ITagViewItem {
     private int itemWidth, itemHeight;
 
     private int absoluteX, absoluteY;
+
+    private AccessibilityNodeInfo source;
 
     public TagViewViewItem(Context context) {
         super(context);
@@ -55,6 +58,7 @@ class TagViewViewItem extends AppCompatTextView implements ITagViewItem {
                 ResourceHelper.fromDPToPix(getContext(), 0),
                 ResourceHelper.fromDPToPix(getContext(), 6),
                 ResourceHelper.fromDPToPix(getContext(), 0));
+        // cast shadow
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setElevation(ResourceHelper.fromDPToPix(getContext(), 20));
         } else {
@@ -188,5 +192,15 @@ class TagViewViewItem extends AppCompatTextView implements ITagViewItem {
     @Override
     public void setItemHeight(int height) {
         this.itemHeight = height;
+    }
+
+    @Override
+    public void setSourceNodeInfo(AccessibilityNodeInfo nodeInfo) {
+        this.source = nodeInfo;
+    }
+
+    @Override
+    public AccessibilityNodeInfo getSourceNodeInfo() {
+        return this.source;
     }
 }

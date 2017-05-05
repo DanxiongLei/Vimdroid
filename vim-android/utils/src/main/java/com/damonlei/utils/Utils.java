@@ -4,6 +4,7 @@ import android.os.SystemClock;
 import android.support.annotation.IntegerRes;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,6 +28,11 @@ public class Utils {
     }
 
     public static boolean nullOrNil(Object object) {
+        if (object instanceof String) {
+            return nullOrNil(((String) object));
+        } else if (object instanceof Collection) {
+            return nullOrNil(((Collection) object));
+        }
         return object == null;
     }
 
@@ -36,6 +42,10 @@ public class Utils {
 
     public static boolean nullOrNil(List list) {
         return list == null || list.isEmpty();
+    }
+
+    public static boolean nullOrNil(Collection collection) {
+        return collection == null || collection.isEmpty();
     }
 
     public static boolean nullOrNil(int[] array) {

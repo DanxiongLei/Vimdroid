@@ -1,5 +1,7 @@
 package com.damonlei.vimdroid.view;
 
+import android.view.accessibility.AccessibilityNodeInfo;
+
 /**
  * @author damonlei
  * @time 2017/3/5
@@ -50,4 +52,7 @@ public interface ITagViewItem {
 
     void setItemHeight(int height);
 
+    void setSourceNodeInfo(AccessibilityNodeInfo nodeInfo);
+
+    AccessibilityNodeInfo getSourceNodeInfo();
 }

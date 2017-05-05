@@ -1,5 +1,7 @@
 package com.damonlei.vimdroid.connect;
 
+import com.damonlei.vimdroid.utils.ThreadPool;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,8 +17,6 @@ import timber.log.Timber;
  */
 public class AcceptConnectionThread extends Thread {
 
-    private ExecutorService executor;
-
     private ServerSocket serverSocket;
 
     private IOSocketThreadRunnable socketThreadRunnable;
@@ -28,7 +28,6 @@ public class AcceptConnectionThread extends Thread {
     public AcceptConnectionThread(ServerSocket serverSocket, Server.DataReceivedListener listener) {
         this.serverSocket = serverSocket;
         this.listener = listener;
-        executor = Executors.newCachedThreadPool();
     }
 
     public ServerSocket getServerSocket() {
@@ -62,7 +61,7 @@ public class AcceptConnectionThread extends Thread {
 //                socket.setSoTimeout(1000);
                 socketThreadRunnable = new IOSocketThreadRunnable(socket, listener);
                 Timber.d("Start to communicate.");
-                executor.submit(socketThreadRunnable);
+                ThreadPool.post(socketThreadRunnable);
             }
         } catch (IOException e) {
             Timber.e("Got Exception %s", e);

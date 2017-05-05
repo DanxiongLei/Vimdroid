@@ -1,5 +1,6 @@
 package com.damonlei.vimdroid.view;
 
+import com.damonlei.utils.Utils;
 import com.damonlei.vimdroid.keyBoard.KeyCode;
 import com.damonlei.vimdroid.utils.GsonLogic;
 
@@ -7,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +25,12 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.S;
  * @email danxionglei@foxmail.com
  */
 public class TagViewLogicTest {
+
+    @Test
+    public void testUtil() {
+        Object obj = new ArrayList<>();
+        Utils.nullOrNil(obj);
+    }
 
     @Test
     public void testGenerateKeyHintList() {

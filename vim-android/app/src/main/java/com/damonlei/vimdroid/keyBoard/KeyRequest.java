@@ -13,6 +13,16 @@ public class KeyRequest {
     public boolean shift;
     public boolean meta;
 
+    public KeyRequest() {
+    }
+
+    public KeyRequest(KeyCode name, boolean ctrl, boolean shift, boolean meta) {
+        this.name = name;
+        this.ctrl = ctrl;
+        this.shift = shift;
+        this.meta = meta;
+    }
+
     @Override
     public String toString() {
         return "KeyRequest " + GsonLogic.getGson().toJson(this);

@@ -117,7 +117,8 @@ public class CommandDispatcher implements Server.DataReceivedListener {
         if (!(type instanceof ParameterizedType)) {
             return null;
         }
-        if (((ParameterizedType) type).getRawType() == CommandExecutorBase.class) {
+        Type rawType = ((ParameterizedType) type).getRawType();
+        if (rawType == CommandExecutorBase.class || rawType == MultiNodeCommandExecutor.class) {
             return type;
         }
         return null;

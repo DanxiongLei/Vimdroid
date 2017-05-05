@@ -1,6 +1,7 @@
 package com.damonlei.vimdroid;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.damonlei.vimdroid.utils.GsonLogic;
 import com.google.gson.Gson;
@@ -28,7 +29,7 @@ public final class Global extends Application {
 
     public static final int CMD_ID_SHUTDOWN = 239;
 
-    public static Settings SETTINGS = new Settings();
+    public static Settings SETTINGS = new Settings.Builder().build();
 
     public static Gson getGson() {
         return GsonLogic.getGson();

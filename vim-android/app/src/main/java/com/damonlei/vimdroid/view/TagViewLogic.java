@@ -41,9 +41,9 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.W;
  */
 class TagViewLogic {
 
-    private static final int STATE_UNATTACHED = 1;
+    static final int STATE_UNATTACHED = 1;
 
-    private static final int STATE_ATTACHED = 2;
+    static final int STATE_ATTACHED = 2;
 
     private int mState = STATE_UNATTACHED;
 
@@ -69,7 +69,7 @@ class TagViewLogic {
         if (mState == STATE_ATTACHED) {
             return processStateAttached(code);
         } else {
-            return processStateUnattached(code);
+            return processStateUnattached();
         }
     }
 
@@ -82,16 +82,16 @@ class TagViewLogic {
         if (code == BACKSPACE || code == DELETE) {
             // 如果没有成功
             if (!backward()) {
-                detachAndReset();
+                cancel();
             }
         } else if (isAcceptedLetter(code)) {
             ITagViewItem mayHit = forward(code);
             if (mayHit != null) {
-                mExecutor.hit(mayHit);
                 detachAndReset();
+                mExecutor.performAction(mayHit.getSourceNodeInfo());
             }
         } else {
-            detachAndReset();
+            cancel();
         }
         return true;
     }
@@ -101,10 +101,7 @@ class TagViewLogic {
      *
      * @return 如果接受了该命令则返回true，如果出现问题，返回false
      */
-    private boolean processStateUnattached(KeyCode code) {
-        if (code != F) {
-            return false;
-        }
+    private boolean processStateUnattached() {
         mState = STATE_ATTACHED;
         prepare();
         mExecutor.attach();
@@ -116,14 +113,14 @@ class TagViewLogic {
         List<ITagViewItem> viewItemList = mExecutor.getAttachedItemList();
         viewItemList.clear();
         mKeyBoardRecords.clear();
-        List<AccessibilityNodeInfo> infos = mExecutor.getClickableNodes();
-        if (infos == null || infos.size() == 0) {
+        List<AccessibilityNodeInfo> nodeInfos = mExecutor.getCandidatesNodeList();
+        if (nodeInfos == null || nodeInfos.size() == 0) {
             throw new IllegalStateException("No clickable nodes found.");
         }
-        List<String> hints = generateKeyHintList(infos.size());
+        List<String> hints = generateKeyHintList(nodeInfos.size());
         int size = hints.size();
         for (int i = 0; i < size; i++) {
-            AccessibilityNodeInfo info = infos.get(i);
+            AccessibilityNodeInfo info = nodeInfos.get(i);
             String hint = hints.get(i);
             ITagViewItem item = mExecutor.getValidTagItem();
             item.setText(hint);
@@ -133,6 +130,7 @@ class TagViewLogic {
             item.setItemWidth(mCacheRect.width());
             item.setItemHeight(mCacheRect.height());
             item.setVisibility(true);
+            item.setSourceNodeInfo(info);
             viewItemList.add(item);
         }
     }
@@ -286,6 +284,11 @@ class TagViewLogic {
             }
         }
         return false;
+    }
+
+    private void cancel() {
+        detachAndReset();
+        mExecutor.cancel();
     }
 
     private void detachAndReset() {

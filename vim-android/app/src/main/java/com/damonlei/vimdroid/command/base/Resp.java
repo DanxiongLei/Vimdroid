@@ -12,10 +12,11 @@ public class Resp {
     public String data;
 
     public Resp() {
+        this(0);
     }
 
     public Resp(int status) {
-        this.status = status;
+        this(status, null);
     }
 
     public Resp(int status, String data) {

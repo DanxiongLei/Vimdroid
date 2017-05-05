@@ -15,6 +15,7 @@ import com.damonlei.vimdroid.connect.Server;
 import com.damonlei.vimdroid.device.DeviceController;
 import com.damonlei.vimdroid.device.WindowRoot;
 import com.damonlei.vimdroid.keyBoard.KeyBoardCommandExecutor;
+import com.damonlei.vimdroid.utils.ThreadPool;
 
 import java.io.IOException;
 
@@ -77,6 +78,7 @@ public class AppService extends Service {
             server.shutdown();
             server = null;
         }
+        ThreadPool.destroy();
     }
 
     @Nullable

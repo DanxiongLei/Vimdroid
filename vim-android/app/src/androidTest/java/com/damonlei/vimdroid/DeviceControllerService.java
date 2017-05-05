@@ -5,6 +5,7 @@ import android.app.UiAutomation;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.support.test.uiautomator.UiDevice;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.util.Collections;
@@ -19,7 +20,7 @@ import timber.log.Timber;
  * @time 2017/3/10
  * @email danxionglei@foxmail.com
  */
-class DeviceControllerService extends IDeviceController.Stub {
+class DeviceControllerService extends IDeviceController.Stub implements UiAutomation.OnAccessibilityEventListener {
 
     private UiAutomation uiAutomation;
 
@@ -31,6 +32,26 @@ class DeviceControllerService extends IDeviceController.Stub {
 
     private int displayWidth, displayHeight;
 
+    private long updateTime;
+
+    private final Object updateTimeLock = new Object();
+
+//    private AccessibilityNodeInfo rootCache;
+
+    private Filter FILTER_CLICKABLE = new Filter() {
+        @Override
+        public boolean filter(AccessibilityNodeInfo node) {
+            return node != null && node.isClickable();
+        }
+    };
+
+    private Filter FILTER_SCROLLABLE = new Filter() {
+        @Override
+        public boolean filter(AccessibilityNodeInfo node) {
+            return node != null && node.isScrollable();
+        }
+    };
+
     DeviceControllerService(Instrumentation instrumentation) {
         this.instrumentation = instrumentation;
         this.uiAutomation = instrumentation.getUiAutomation();
@@ -38,22 +59,63 @@ class DeviceControllerService extends IDeviceController.Stub {
         this.uiDevice = UiDevice.getInstance(instrumentation);
         this.displayWidth = uiDevice.getDisplayWidth();
         this.displayHeight = uiDevice.getDisplayHeight();
+//        this.uiAutomation.setOnAccessibilityEventListener(this);
+//        synchronized (updateTimeLock) {
+//            updateTime = System.currentTimeMillis();
+//        }
+    }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        int type = event.getEventType();
+        if (type == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            Timber.d("onAccessibilityEvent(63) type = TYPE_WINDOW_CONTENT_CHANGED");
+        } else if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            Timber.d("onAccessibilityEvent(63) type = TYPE_WINDOW_STATE_CHANGED");
+        } else if (type == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+            Timber.d("onAccessibilityEvent(63) type = TYPE_WINDOWS_CHANGED");
+        } else {
+            return;
+        }
+//        synchronized (updateTimeLock) {
+//            updateTime = System.currentTimeMillis();
+//        }
     }
 
     @Override
     public AccessibilityNodeInfo getRootInActiveWindow() {
-        return uiAutomation.getRootInActiveWindow();
+        AccessibilityNodeInfo root = uiAutomation.getRootInActiveWindow();
+//        this.rootCache = root;
+        return root;
     }
+
+//    private AccessibilityNodeInfo getRootInActiveWindow(boolean bypassCache) {
+//        if (bypassCache) {
+//            return getRootInActiveWindow();
+//        } else {
+//            return this.rootCache;
+//        }
+//    }
 
     @Override
     public List<AccessibilityNodeInfo> getClickableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
-        AccessibilityNodeInfo root = getRootInActiveWindow();
-        return filterClickableNode(root, onlyVisible);
+        AccessibilityNodeInfo root = this.getRootInActiveWindow();
+        return filterNodesTree(root, onlyVisible, FILTER_CLICKABLE);
     }
 
-    private List<AccessibilityNodeInfo> filterClickableNode(AccessibilityNodeInfo root, boolean onlyVisible) {
+    @Override
+    public List<AccessibilityNodeInfo> getScrollableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        return filterNodesTree(root, onlyVisible, FILTER_SCROLLABLE);
+    }
+
+    private interface Filter {
+        public boolean filter(AccessibilityNodeInfo node);
+    }
+
+    private List<AccessibilityNodeInfo> filterNodesTree(AccessibilityNodeInfo root, boolean onlyVisible, Filter filter) {
         if (root == null) {
-            Timber.e("filterClickableNode(60) get not root.");
+            Timber.e("filterNode(60) get not root.");
             //noinspection unchecked
             return Collections.EMPTY_LIST;
         }
@@ -67,7 +129,7 @@ class DeviceControllerService extends IDeviceController.Stub {
             if (node == null) {
                 continue;
             }
-            if (node.isClickable() && (!onlyVisible || isVisible(node))) {
+            if (filter.filter(node) && (!onlyVisible || isVisible(node))) {
                 result.offer(node);
             }
             count = node.getChildCount();
@@ -75,12 +137,15 @@ class DeviceControllerService extends IDeviceController.Stub {
                 queue.offer(node.getChild(i));
             }
         }
-        Timber.d("Finally, we get [%d] clickable nodes.", result.size());
+        Timber.d("Finally, we get [%d] nodes.", result.size());
         return result;
     }
 
     private boolean isVisible(AccessibilityNodeInfo info) {
         if (info == null) {
+            return false;
+        }
+        if (!info.isVisibleToUser()) {
             return false;
         }
         info.getBoundsInScreen(cacheRect);
