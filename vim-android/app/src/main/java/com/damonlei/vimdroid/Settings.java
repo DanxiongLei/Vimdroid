@@ -25,7 +25,7 @@ public class Settings {
 
     public static final class Builder {
         private boolean displayClickableRegion = false;
-        private int scrollPx = 60 * 3;
+        private int scrollPx = 100 * 3;
         private boolean smoothScroll = false;
 
         public Builder() {

@@ -88,7 +88,7 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             node.getBoundsInScreen(cacheRect);
             int maxSwipeDistancePerTime = Global.SETTINGS.scrollPx;
             // 每个step执行意味着5ms
-            int steps = 200/*ms*/ / 5;
+            int steps = 80/*ms*/ / 5;
             if (code == UP) {
                 int centerX = cacheRect.centerX();
                 DeviceController.getInstance().swipe(centerX, cacheRect.top, centerX,
