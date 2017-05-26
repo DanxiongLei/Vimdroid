@@ -145,14 +145,14 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
     }
 
     boolean performAction(AccessibilityNodeInfo nodeInfo) {
+        mNodeChoosedCallback = null;
+        if (mCandidateNodesContainer != null) {
+            mCandidateNodesContainer.clear();
+            mCandidateNodesContainer = null;
+        }
         if (mNodeChoosedCallback != null) {
             pendingResp = mNodeChoosedCallback.nodeChoosed(nodeInfo);
             // 当该Callback任务完成后，清理该Callback
-            mNodeChoosedCallback = null;
-            if (mCandidateNodesContainer != null) {
-                mCandidateNodesContainer.clear();
-                mCandidateNodesContainer = null;
-            }
             return true;
         }
         // use click action as default.
@@ -160,13 +160,13 @@ public class TagViewExecutor extends CommandExecutorBase<KeyRequest, Resp> imple
     }
 
     void cancel() {
+        mNodeChoosedCallback = null;
+        if (mCandidateNodesContainer != null) {
+            mCandidateNodesContainer.clear();
+            mCandidateNodesContainer = null;
+        }
         if (mNodeChoosedCallback != null) {
             pendingResp = mNodeChoosedCallback.nodeChoosed(null);
-            mNodeChoosedCallback = null;
-            if (mCandidateNodesContainer != null) {
-                mCandidateNodesContainer.clear();
-                mCandidateNodesContainer = null;
-            }
         }
     }
 

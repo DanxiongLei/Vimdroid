@@ -1,6 +1,7 @@
 package com.damonlei.vimdroid.command.base;
 
 import android.graphics.Rect;
+import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ImageView;
 
@@ -11,7 +12,6 @@ import com.damonlei.vimdroid.view.SelectedNodeBorderDrawable;
 
 import java.util.List;
 
-import static android.view.View.LAYER_TYPE_SOFTWARE;
 import static com.damonlei.vimdroid.keyBoard.KeyCode.BACKSPACE;
 import static com.damonlei.vimdroid.keyBoard.KeyCode.DELETE;
 import static com.damonlei.vimdroid.keyBoard.KeyCode.ESC;
@@ -43,7 +43,7 @@ public abstract class MultiNodeCommandExecutor<Req, Response> extends CommandExe
 
     private WindowRoot mWindowRoot;
 
-    private ImageView mSelectedNodeBorderView;
+    private View mSelectedNodeBorderView;
 
     private Rect mCacheRect;
 
