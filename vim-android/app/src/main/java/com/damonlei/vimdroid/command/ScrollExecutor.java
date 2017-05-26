@@ -15,6 +15,8 @@ import com.damonlei.vimdroid.utils.ThreadPool;
 
 import java.util.List;
 
+import timber.log.Timber;
+
 import static com.damonlei.vimdroid.keyBoard.KeyCode.DOWN;
 import static com.damonlei.vimdroid.keyBoard.KeyCode.H;
 import static com.damonlei.vimdroid.keyBoard.KeyCode.J;
@@ -92,13 +94,14 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             // 部分可滑动滑块不能从边缘滑动，否则可能将事件传递给其他view.
             // slop就是主动向内缩小一段距离。
             int slop = 1;
-            if (cacheRect.width() > slop * 2) {
+            if (cacheRect.width() > slop * 2 && cacheRect.height() > slop * 2) {
                 cacheRect.left += slop;
                 cacheRect.right -= slop;
-            }
-            if (cacheRect.height() > slop * 2) {
                 cacheRect.top += slop;
                 cacheRect.bottom -= slop;
+            } else {
+                Timber.e("ScrollRunnable found that the scrollable node was too small. %s", cacheRect.toShortString());
+                return;
             }
             if (code == UP) {
                 int centerX = cacheRect.centerX();
