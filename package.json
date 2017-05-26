@@ -14,18 +14,19 @@
   "author": "damonlei",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^7.0.12",
+    "@types/node": "^7.0.22",
     "grunt": "^1.0.1",
-    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-clean": "^1.1.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-shell": "^2.1.0",
     "grunt-ts": "^6.0.0-beta.15",
     "load-grunt-tasks": "^3.5.2",
-    "typescript": "^2.2.2"
+    "typescript": "^2.3.3"
   },
   "dependencies": {
-    "adbkit": "^2.9.0",
+    "adbkit": "^2.9.2",
     "inquirer": "^3.0.6",
-    "yargs": "^7.0.2"
+    "keypress": "^0.2.1",
+    "yargs": "^8.0.1"
   }
 }
