@@ -1,7 +1,5 @@
 package com.damonlei.vimdroid;
 
-import android.app.Application;
-
 /**
  * @author damonlei
  * @time 2017/4/12
@@ -25,7 +23,7 @@ public class Settings {
 
     public static final class Builder {
         private boolean displayClickableRegion = false;
-        private int scrollPx = 100 * 3;
+        private int scrollPx = 180 * 3;
         private boolean smoothScroll = false;
 
         public Builder() {

@@ -88,7 +88,18 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             node.getBoundsInScreen(cacheRect);
             int maxSwipeDistancePerTime = Global.SETTINGS.scrollPx;
             // 每个step执行意味着5ms
-            int steps = 80/*ms*/ / 5;
+            int steps = 40/*ms*/ / 5;
+            // 部分可滑动滑块不能从边缘滑动，否则可能将事件传递给其他view.
+            // slop就是主动向内缩小一段距离。
+            int slop = 1;
+            if (cacheRect.width() > slop * 2) {
+                cacheRect.left += slop;
+                cacheRect.right -= slop;
+            }
+            if (cacheRect.height() > slop * 2) {
+                cacheRect.top += slop;
+                cacheRect.bottom -= slop;
+            }
             if (code == UP) {
                 int centerX = cacheRect.centerX();
                 DeviceController.getInstance().swipe(centerX, cacheRect.top, centerX,
