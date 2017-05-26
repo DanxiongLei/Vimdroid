@@ -14,7 +14,7 @@ const argv = require("yargs")
     .boolean("d").alias("d", "debug").describe("d", strings.uiOptionDebug)
     .boolean("v").alias("v", "version").describe("v", strings.uiOptionVersion)
     .boolean("s").alias("s", "setting").describe("s", "Coming soon...")
-    .boolean("f").alias("f", "force")
+    .boolean("f").alias("f", "force").describe("f", "[DEBUG]Force install the new app version.")
     .help("h").alias("h", "help").describe("h", strings.uiOptionHelp)
     .detectLocale(false)
     .argv;

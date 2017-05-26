@@ -98,6 +98,7 @@ typings/
 
 # IntelliJ
 /out/
+*.apk
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
