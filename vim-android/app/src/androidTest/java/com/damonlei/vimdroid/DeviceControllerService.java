@@ -8,7 +8,10 @@ import android.support.test.uiautomator.UiDevice;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -107,19 +110,37 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
     @Override
     public List<AccessibilityNodeInfo> getClickableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
         AccessibilityNodeInfo root = this.getRootInActiveWindow();
-        return filterNodesTree(root, onlyVisible, FILTER_CLICKABLE);
+        return mergeCoincide(filterNodesTree(root, onlyVisible, FILTER_CLICKABLE));
     }
 
     @Override
     public List<AccessibilityNodeInfo> getScrollableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        return filterNodesTree(root, onlyVisible, FILTER_SCROLLABLE);
+        return mergeCoincide(filterNodesTree(root, onlyVisible, FILTER_SCROLLABLE));
     }
 
     @Override
     public List<AccessibilityNodeInfo> getEditableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        return filterNodesTree(root, onlyVisible, FILTER_EDITABLE);
+        return mergeCoincide(filterNodesTree(root, onlyVisible, FILTER_EDITABLE));
+    }
+
+    private List<AccessibilityNodeInfo> mergeCoincide(List<AccessibilityNodeInfo> accessibilityNodeList) {
+        if (accessibilityNodeList == null || accessibilityNodeList.size() <= 1) {
+            return accessibilityNodeList;
+        }
+        HashSet<String> set = new HashSet<>();
+        for (int i = accessibilityNodeList.size() - 1;  i>=0; i--) {
+            AccessibilityNodeInfo info = accessibilityNodeList.get(i);
+            info.getBoundsInScreen(cacheRect);
+            String key = cacheRect.flattenToString();
+            if (set.contains(key)) {
+                accessibilityNodeList.remove(i);
+            } else {
+                set.add(key);
+            }
+        }
+        return accessibilityNodeList;
     }
 
     private interface Filter {
@@ -133,7 +154,7 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
             return Collections.EMPTY_LIST;
         }
         Queue<AccessibilityNodeInfo> queue = new LinkedList<>();
-        LinkedList<AccessibilityNodeInfo> result = new LinkedList<>();
+        ArrayList<AccessibilityNodeInfo> result = new ArrayList<>();
         int count;
         AccessibilityNodeInfo node;
         queue.offer(root);
@@ -143,7 +164,7 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
                 continue;
             }
             if (filter.filter(node) && (!onlyVisible || isVisible(node))) {
-                result.offer(node);
+                result.add(node);
             }
             count = node.getChildCount();
             for (int i = 0; i < count; i++) {

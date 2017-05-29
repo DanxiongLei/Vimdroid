@@ -1,6 +1,10 @@
 package com.damonlei.vimdroid.view;
 
+import android.graphics.Rect;
+import android.view.accessibility.AccessibilityNodeInfo;
+
 import com.damonlei.utils.Utils;
+import com.damonlei.vimdroid.device.DeviceController;
 import com.damonlei.vimdroid.keyBoard.KeyCode;
 import com.damonlei.vimdroid.utils.GsonLogic;
 
@@ -9,6 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
