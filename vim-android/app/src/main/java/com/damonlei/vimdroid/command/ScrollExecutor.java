@@ -11,6 +11,7 @@ import com.damonlei.vimdroid.R;
 import com.damonlei.vimdroid.command.base.MultiNodeCommandExecutor;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
+import com.damonlei.vimdroid.device.WindowRoot;
 import com.damonlei.vimdroid.keyBoard.KeyBoardCommandExecutor;
 import com.damonlei.vimdroid.keyBoard.KeyCode;
 import com.damonlei.vimdroid.keyBoard.KeyRequest;
@@ -86,51 +87,77 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
 
         private AccessibilityNodeInfo node;
 
-        private Rect cacheRect;
-
         public ScrollRunnable(KeyCode code, AccessibilityNodeInfo node) {
             this.code = code;
             this.node = node;
-            this.cacheRect = new Rect();
         }
 
         @Override
         public void run() {
-            node.getBoundsInScreen(cacheRect);
+            // init params
             int maxSwipeDistancePerTime = Global.SETTINGS.scrollPx;
             // 每个step执行意味着5ms
             int steps = 40/*ms*/ / 5;
+            Rect scrollBounds = getScrollBounds(node);
+            if (scrollBounds == null) {
+                return;
+            }
+            scroll(maxSwipeDistancePerTime, steps, scrollBounds);
+        }
+
+        private Rect getScrollBounds(AccessibilityNodeInfo node) {
+            Rect scrollBounds = new Rect();
+
+            // get scroll bounds
+            node.getBoundsInScreen(scrollBounds);
+
+            // 防止误触status_bar
+            int statusHeight = WindowRoot.getInstance().getStatusBarHeight();
+            scrollBounds.top = Math.max(scrollBounds.top, statusHeight);
+            if (scrollBounds.top >= scrollBounds.bottom || scrollBounds.left >= scrollBounds.right) {
+                Timber.e("getScrollBounds(118) ScrollBounds is invalid. %s", scrollBounds.toShortString());
+                return null;
+            }
+
             // 部分可滑动滑块不能从边缘滑动，否则可能将事件传递给其他view.
             // slop就是主动向内缩小一段距离。
             int slop = 1;
-            if (cacheRect.width() > slop * 2 && cacheRect.height() > slop * 2) {
-                cacheRect.left += slop;
-                cacheRect.right -= slop;
-                cacheRect.top += slop;
-                cacheRect.bottom -= slop;
-            } else {
-                Timber.e("ScrollRunnable found that the scrollable node was too small. %s", cacheRect.toShortString());
-                return;
+            if (scrollBounds.width() > slop * 2 && scrollBounds.height() > slop * 2) {
+                scrollBounds.left += slop;
+                scrollBounds.right -= slop;
+                scrollBounds.top += slop;
+                scrollBounds.bottom -= slop;
+                return scrollBounds;
             }
-            if (code == UP) {
-                int centerX = cacheRect.centerX();
-                DeviceController.getInstance().swipe(centerX, cacheRect.top, centerX,
-                        cacheRect.top + Math.min(cacheRect.height(), maxSwipeDistancePerTime), steps);
-            } else if (code == DOWN) {
-                int centerX = cacheRect.centerX();
-                DeviceController.getInstance().swipe(centerX, cacheRect.bottom, centerX,
-                        cacheRect.bottom - Math.min(cacheRect.height(), maxSwipeDistancePerTime), steps);
-            } else if (code == LEFT) {
-                int centerY = cacheRect.centerY();
-                DeviceController.getInstance().swipe(cacheRect.left, centerY,
-                        cacheRect.left + Math.min(cacheRect.width(), maxSwipeDistancePerTime), centerY, steps);
-            } else {
-                int centerY = cacheRect.centerY();
-                DeviceController.getInstance().swipe(cacheRect.right, centerY,
-                        cacheRect.right - Math.min(cacheRect.width(), maxSwipeDistancePerTime), centerY, steps);
-            }
-
+            Timber.e("ScrollRunnable found that the scrollable node was too small. %s", scrollBounds.toShortString());
+            return null;
         }
+
+        private void scroll(int maxSwipeDistancePerTime, int steps, Rect scrollBounds) {
+            if (code == UP) {
+                // 从中心向下方滑动 (为了避免碰到可伸缩头部)
+                int centerX = scrollBounds.centerX();
+                int centerY = scrollBounds.centerY();
+                DeviceController.getInstance().swipe(centerX, centerY, centerX,
+                        Math.min(centerY + maxSwipeDistancePerTime, scrollBounds.bottom), steps);
+            } else if (code == DOWN) {
+                // 从下边界向上滑动
+                int centerX = scrollBounds.centerX();
+                DeviceController.getInstance().swipe(centerX, scrollBounds.bottom, centerX,
+                        scrollBounds.bottom - Math.min(scrollBounds.height(), maxSwipeDistancePerTime), steps);
+            } else if (code == LEFT) {
+                // 从左边界向右
+                int centerY = scrollBounds.centerY();
+                DeviceController.getInstance().swipe(scrollBounds.left, centerY,
+                        scrollBounds.left + Math.min(scrollBounds.width(), maxSwipeDistancePerTime), centerY, steps);
+            } else {
+                // 从右边界向左
+                int centerY = scrollBounds.centerY();
+                DeviceController.getInstance().swipe(scrollBounds.right, centerY,
+                        scrollBounds.right - Math.min(scrollBounds.width(), maxSwipeDistancePerTime), centerY, steps);
+            }
+        }
+
     }
 
     private KeyCode unifyKeyCode(KeyRequest data) {

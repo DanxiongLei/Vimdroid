@@ -2,6 +2,7 @@ package com.damonlei.vimdroid.device;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
@@ -42,9 +43,29 @@ public class WindowRoot extends FrameLayout {
 
     private WindowManager.LayoutParams mLayoutParams;
 
+    private volatile boolean viewAttached = false;
+
+    private Rect cacheRect = new Rect();
+
     public WindowRoot(Context context) {
         super(context);
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public int getStatusBarHeight() {
+        this.getWindowVisibleDisplayFrame(cacheRect);
+        if (cacheRect.top != 0) {
+            return cacheRect.top;
+        }
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int result = 0;
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        if (result != 0) {
+            return result;
+        }
+        return ResourceHelper.fromDPToPix(getContext(), 25);
     }
 
     public void attachOnWindow() {
@@ -74,6 +95,7 @@ public class WindowRoot extends FrameLayout {
             mLayoutParams.y = 0;
         }
         windowManager.addView(this, mLayoutParams);
+        viewAttached = true;
     }
 
     private int adjustCoordinateY(int y) {
@@ -91,5 +113,6 @@ public class WindowRoot extends FrameLayout {
     public void detachFromWindow() {
         WindowManager windowManager = mWindowManager;
         windowManager.removeView(this);
+        viewAttached = false;
     }
 }
