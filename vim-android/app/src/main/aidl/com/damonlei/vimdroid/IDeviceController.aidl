@@ -11,6 +11,8 @@ interface IDeviceController {
 
     List<AccessibilityNodeInfo> getScrollableNodes(boolean bypassCache, boolean onlyVisible);
 
+    List<AccessibilityNodeInfo> getEditableNodes(boolean bypassCache, boolean onlyVisible);
+
     boolean openNotification();
 
     boolean performGlobalAction(int action);

@@ -52,6 +52,13 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
         }
     };
 
+    private Filter FILTER_EDITABLE = new Filter() {
+        @Override
+        public boolean filter(AccessibilityNodeInfo node) {
+            return node != null && node.isEditable();
+        }
+    };
+
     DeviceControllerService(Instrumentation instrumentation) {
         this.instrumentation = instrumentation;
         this.uiAutomation = instrumentation.getUiAutomation();
@@ -107,6 +114,12 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
     public List<AccessibilityNodeInfo> getScrollableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         return filterNodesTree(root, onlyVisible, FILTER_SCROLLABLE);
+    }
+
+    @Override
+    public List<AccessibilityNodeInfo> getEditableNodes(boolean bypassCache, boolean onlyVisible) throws RemoteException {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        return filterNodesTree(root, onlyVisible, FILTER_EDITABLE);
     }
 
     private interface Filter {

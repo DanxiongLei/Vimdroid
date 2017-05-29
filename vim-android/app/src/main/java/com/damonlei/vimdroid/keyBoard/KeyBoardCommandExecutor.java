@@ -1,5 +1,6 @@
 package com.damonlei.vimdroid.keyBoard;
 
+import android.content.Context;
 import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -33,6 +34,8 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.R;
  */
 public class KeyBoardCommandExecutor extends CommandExecutorBase<KeyRequest, Resp> {
 
+    private Context mContext;
+
     private TagViewExecutor mTagViewExecutor;
 
     private GlobalControlKeyExecutor mGlobalKeyExecutor;
@@ -52,8 +55,10 @@ public class KeyBoardCommandExecutor extends CommandExecutorBase<KeyRequest, Res
 
     public static final int STATE_IDLE = 1;
 
+    // 待选择状态
     public static final int STATE_TAG_VIEW_ATTACHED = 2;
 
+    // 已选择状态
     public static final int STATE_NODE_SELECTED = 3;
 
     @Retention(RetentionPolicy.SOURCE)
@@ -61,13 +66,13 @@ public class KeyBoardCommandExecutor extends CommandExecutorBase<KeyRequest, Res
     @interface State {
     }
 
-    public KeyBoardCommandExecutor(EnsurePrepareExecutor executor) {
+    public KeyBoardCommandExecutor(Context context, EnsurePrepareExecutor executor) {
+        mContext = context;
         mTagViewExecutor = new TagViewExecutor();
         mTagViewExecutor.setKeyBoardController(this);
         mGlobalKeyExecutor = new GlobalControlKeyExecutor();
         mEnsurePrepareExecutor = executor;
-        mScrollExecutor = new ScrollExecutor();
-        mScrollExecutor.setKeyBoardCommandExecutor(this);
+        mScrollExecutor = new ScrollExecutor(this);
     }
 
     @Override
@@ -140,6 +145,10 @@ public class KeyBoardCommandExecutor extends CommandExecutorBase<KeyRequest, Res
     @State
     public int getState() {
         return mState;
+    }
+
+    public Context getContext() {
+        return mContext;
     }
 
 }

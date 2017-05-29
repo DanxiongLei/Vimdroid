@@ -1,13 +1,16 @@
 package com.damonlei.vimdroid.command;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.damonlei.utils.ResourceHelper;
 import com.damonlei.utils.Utils;
 import com.damonlei.vimdroid.Global;
 import com.damonlei.vimdroid.command.base.MultiNodeCommandExecutor;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
+import com.damonlei.vimdroid.keyBoard.KeyBoardCommandExecutor;
 import com.damonlei.vimdroid.keyBoard.KeyCode;
 import com.damonlei.vimdroid.keyBoard.KeyRequest;
 import com.damonlei.vimdroid.keyBoard.KeyRequestConsumer;
@@ -33,15 +36,20 @@ import static com.damonlei.vimdroid.keyBoard.KeyCode.UP;
  */
 public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> implements KeyRequestConsumer {
 
-    private Rect cacheRect = new Rect();
+    private Context mContext;
 
     private KeyCode[] mAcceptKeyCodeArray = new KeyCode[]{
             H, J, K, L, UP, DOWN, LEFT, RIGHT
     };
 
+    public ScrollExecutor(KeyBoardCommandExecutor executor) {
+        super(executor);
+        this.mContext = executor.getContext();
+    }
+
     @Override
     public Resp execute(KeyRequest data) throws Exception {
-        if (!isNodeChoosed() && !isCandidateCleared()) {
+        if (!isNodeChoosed() && !isCandidateNotPrepared()) {
             throw new IllegalStateException("MultiNodeCommandExecutor state not right.");
         }
         // 判断是否是取消选择命令，如果是，则取消刚才的选择。
@@ -50,11 +58,11 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             return ret;
         }
         KeyCode code = unifyKeyCode(data);
-        if (isCandidateCleared()) {
+        if (isCandidateNotPrepared()) {
             // 如果没有已经选中的Node，需要准备后，将控制权交出去，由用户进行选择。
             List<AccessibilityNodeInfo> nodes = getScrollableNodes(code);
             if (Utils.nullOrNil(nodes)) {
-                return Resp.FAILURE_RESP;
+                return Resp.failure(ResourceHelper.getString(mContext, com.damonlei.utils.R.string.can_not_find_scrollable_node));
             }
             if (nodes.size() != 1) {
                 setCandidateNodeInfo(nodes);

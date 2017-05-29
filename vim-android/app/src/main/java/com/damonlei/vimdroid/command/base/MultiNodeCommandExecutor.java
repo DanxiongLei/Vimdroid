@@ -121,7 +121,7 @@ public abstract class MultiNodeCommandExecutor<Req, Response> extends CommandExe
         return mChoosedState == TARGET_NODE_CHOOSED;
     }
 
-    public boolean isCandidateCleared() {
+    public boolean isCandidateNotPrepared() {
         return mChoosedState == CANDIDATES_NOT_PREPARED;
     }
 

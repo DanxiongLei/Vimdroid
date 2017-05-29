@@ -73,6 +73,15 @@ public class DeviceController {
         }
     }
 
+    public List<AccessibilityNodeInfo> getEditableNodes() {
+        try {
+            return mRemoteController.getEditableNodes(false, true);
+        } catch (RemoteException e) {
+            Timber.e("getScrollableNodes(71) ");
+            throw new RuntimeException(e);
+        }
+    }
+
     public boolean openNotification() {
         try {
             return mRemoteController.openNotification();

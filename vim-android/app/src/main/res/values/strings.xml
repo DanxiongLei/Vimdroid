@@ -6,4 +6,6 @@
     <string name="please_grant_alert_window_permission">请授予悬浮窗权限 (DrawOverlay)</string>
     <string name="agree">去设置</string>
     <string name="disagree">取消</string>
+    <string name="can_not_find_editable_node">未找到可编辑节点</string>
+    <string name="can_not_find_scrollable_node">未找到可滑动节点</string>
 </resources>
