@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.damonlei.utils.ResourceHelper;
 import com.damonlei.utils.Utils;
 import com.damonlei.vimdroid.Global;
+import com.damonlei.vimdroid.R;
 import com.damonlei.vimdroid.command.base.MultiNodeCommandExecutor;
 import com.damonlei.vimdroid.command.base.Resp;
 import com.damonlei.vimdroid.device.DeviceController;
@@ -62,7 +63,7 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             // 如果没有已经选中的Node，需要准备后，将控制权交出去，由用户进行选择。
             List<AccessibilityNodeInfo> nodes = getScrollableNodes(code);
             if (Utils.nullOrNil(nodes)) {
-                return Resp.failure(ResourceHelper.getString(mContext, com.damonlei.utils.R.string.can_not_find_scrollable_node));
+                return Resp.failure(ResourceHelper.getString(mContext, R.string.can_not_find_scrollable_node));
             }
             if (nodes.size() != 1) {
                 setCandidateNodeInfo(nodes);

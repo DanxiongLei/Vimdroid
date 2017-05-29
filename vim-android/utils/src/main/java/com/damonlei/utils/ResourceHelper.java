@@ -3,6 +3,8 @@ package com.damonlei.utils;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.NonNull;
 
 /**
  * @author damonlei
@@ -28,14 +30,17 @@ public class ResourceHelper {
         return sDensity;
     }
 
+    @SuppressWarnings("deprecation")
     public static int getColor(Context context, int resId) {
         return context.getResources().getColor(resId);
     }
 
+    @SuppressWarnings("deprecation")
     public static ColorStateList getColorStateList(Context context, int resId) {
         return context.getResources().getColorStateList(resId);
     }
 
+    @SuppressWarnings("deprecation")
     public static Drawable getDrawable(Context context, int resId) {
         return context.getResources().getDrawable(resId);
     }

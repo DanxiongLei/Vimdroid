@@ -61,7 +61,7 @@ public class AppService extends Service {
         EnsurePrepareExecutor ensurePrepareExecutor = new EnsurePrepareExecutor(this);
         dispatcher.register(ensurePrepareExecutor);
         dispatcher.register(new PingExecutor());
-        dispatcher.register(new KeyBoardCommandExecutor(ensurePrepareExecutor));
+        dispatcher.register(new KeyBoardCommandExecutor(this, ensurePrepareExecutor));
         dispatcher.register(new ShutdownExecutor(this));
     }
 
