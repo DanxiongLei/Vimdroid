@@ -64,6 +64,9 @@ public class WindowRoot extends FrameLayout {
             mLayoutParams.type = type;
             mLayoutParams.format = PixelFormat.TRANSLUCENT;
             mLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mLayoutParams.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+            }
             mLayoutParams.gravity = Gravity.START | Gravity.TOP;
             mLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
             mLayoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;

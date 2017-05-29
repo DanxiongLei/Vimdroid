@@ -10,7 +10,6 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,7 +129,7 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
             return accessibilityNodeList;
         }
         HashSet<String> set = new HashSet<>();
-        for (int i = accessibilityNodeList.size() - 1;  i>=0; i--) {
+        for (int i = accessibilityNodeList.size() - 1; i >= 0; i--) {
             AccessibilityNodeInfo info = accessibilityNodeList.get(i);
             info.getBoundsInScreen(cacheRect);
             String key = cacheRect.flattenToString();

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import com.damonlei.vimdroid.command.EnsurePrepareExecutor;
 import com.damonlei.vimdroid.command.PingExecutor;
@@ -67,7 +66,6 @@ public class AppService extends Service {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
         Timber.d("onDestroy() called");
         WindowRoot.release();
         if (dispatcher != null) {
