@@ -29,7 +29,7 @@ public final class Global extends Application {
 
     public static final int CMD_ID_SHUTDOWN = 239;
 
-    public static Settings SETTINGS = new Settings.Builder().build();
+    public static Settings SETTINGS;
 
     public static Gson getGson() {
         return GsonLogic.getGson();
@@ -43,5 +43,6 @@ public final class Global extends Application {
     public void onCreate() {
         super.onCreate();
         Timber.plant(new Timber.DebugTree());
+        SETTINGS = new Settings.Builder(this).build();
     }
 }

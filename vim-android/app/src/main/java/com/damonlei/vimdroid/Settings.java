@@ -1,5 +1,10 @@
 package com.damonlei.vimdroid;
 
+import android.content.Context;
+import android.content.res.Resources;
+
+import com.damonlei.utils.ResourceHelper;
+
 /**
  * @author damonlei
  * @time 2017/4/12
@@ -23,10 +28,13 @@ public class Settings {
 
     public static final class Builder {
         private boolean displayClickableRegion = false;
-        private int scrollPx = 180 * 3;
+        private int scrollPx;
         private boolean smoothScroll = false;
+        private Context context;
 
-        public Builder() {
+        public Builder(Context context) {
+            this.context = context;
+            scrollPx = ResourceHelper.fromDPToPix(this.context, 130);
         }
 
         public Builder displayClickableRegion(boolean val) {

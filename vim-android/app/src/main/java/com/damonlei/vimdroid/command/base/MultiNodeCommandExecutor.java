@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ImageView;
 
+import com.damonlei.utils.ResourceHelper;
 import com.damonlei.vimdroid.device.WindowRoot;
 import com.damonlei.vimdroid.keyBoard.KeyBoardCommandExecutor;
 import com.damonlei.vimdroid.keyBoard.KeyRequest;
@@ -97,6 +98,7 @@ public abstract class MultiNodeCommandExecutor<Req, Response> extends CommandExe
             mCacheRect = new Rect();
         }
         node.getBoundsInScreen(mCacheRect);
+        WindowRoot.getInstance().intersectWithScreen(mCacheRect);
         mSelectedNodeBorderView.setMinimumWidth(mCacheRect.width());
         mSelectedNodeBorderView.setMinimumHeight(mCacheRect.height());
         mWindowRoot.addViewAtScreenCoordinate(mSelectedNodeBorderView, mCacheRect.left, mCacheRect.top);

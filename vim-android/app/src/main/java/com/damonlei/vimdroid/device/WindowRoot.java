@@ -12,6 +12,8 @@ import android.widget.FrameLayout;
 
 import com.damonlei.utils.ResourceHelper;
 
+import timber.log.Timber;
+
 /**
  * @author damonlei
  * @time 2017/3/2
@@ -47,9 +49,33 @@ public class WindowRoot extends FrameLayout {
 
     private Rect cacheRect = new Rect();
 
+    private Rect screenRect;
+
     public WindowRoot(Context context) {
         super(context);
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public Rect getScreenRect() {
+        if (screenRect == null) {
+            screenRect = new Rect();
+            screenRect.left = screenRect.top = 0;
+            screenRect.right = ResourceHelper.getWidthPixels(getContext());
+            screenRect.bottom = ResourceHelper.getHeightPixels(getContext());
+        }
+        return screenRect;
+    }
+
+    public boolean intersectWithScreen(Rect dst) {
+        if (dst == null) {
+            return false;
+        }
+        Rect screen = getScreenRect();
+        boolean ret = screen.intersect(dst);
+        if (!ret) {
+            Timber.e("intersectWithScreen dst[%s] not intersect with screen[%s]", dst.toShortString(), screen.toShortString());
+        }
+        return ret;
     }
 
     public int getStatusBarHeight() {

@@ -73,7 +73,7 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             setChoosedTargetNodeInfo(nodes.get(0));
         }
         AccessibilityNodeInfo node = getChoosedNodeInfo();
-        ThreadPool.post(new ScrollRunnable(code, node));
+        ThreadPool.post(new ScrollRunnable(mContext, code, node));
         return Resp.SUCCESS_RESP;
     }
 
@@ -87,7 +87,10 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
 
         private AccessibilityNodeInfo node;
 
-        public ScrollRunnable(KeyCode code, AccessibilityNodeInfo node) {
+        private Context context;
+
+        public ScrollRunnable(Context context, KeyCode code, AccessibilityNodeInfo node) {
+            this.context = context;
             this.code = code;
             this.node = node;
         }
@@ -97,7 +100,7 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             // init params
             int maxSwipeDistancePerTime = Global.SETTINGS.scrollPx;
             // 每个step执行意味着5ms
-            int steps = 40/*ms*/ / 5;
+            int steps = 20/*ms*/ / 5;
             Rect scrollBounds = getScrollBounds(node);
             if (scrollBounds == null) {
                 return;
@@ -111,6 +114,13 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             // get scroll bounds
             node.getBoundsInScreen(scrollBounds);
 
+            // 防止超出屏幕边界的问题
+            boolean ret = WindowRoot.getInstance().intersectWithScreen(scrollBounds);
+            if (!ret) {
+                Timber.e("getScrollBounds(intersect) ScrollBounds is invalid. %s", scrollBounds.toShortString());
+                return null;
+            }
+
             // 防止误触status_bar
             int statusHeight = WindowRoot.getInstance().getStatusBarHeight();
             scrollBounds.top = Math.max(scrollBounds.top, statusHeight);
@@ -123,10 +133,7 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
             // slop就是主动向内缩小一段距离。
             int slop = 1;
             if (scrollBounds.width() > slop * 2 && scrollBounds.height() > slop * 2) {
-                scrollBounds.left += slop;
-                scrollBounds.right -= slop;
-                scrollBounds.top += slop;
-                scrollBounds.bottom -= slop;
+                scrollBounds.inset(slop, slop);
                 return scrollBounds;
             }
             Timber.e("ScrollRunnable found that the scrollable node was too small. %s", scrollBounds.toShortString());
@@ -141,10 +148,11 @@ public class ScrollExecutor extends MultiNodeCommandExecutor<KeyRequest, Resp> i
                 DeviceController.getInstance().swipe(centerX, centerY, centerX,
                         Math.min(centerY + maxSwipeDistancePerTime, scrollBounds.bottom), steps);
             } else if (code == DOWN) {
-                // 从下边界向上滑动
+                // 从下边界向上滑动 (为了避免碰到底部栏)
                 int centerX = scrollBounds.centerX();
-                DeviceController.getInstance().swipe(centerX, scrollBounds.bottom, centerX,
-                        scrollBounds.bottom - Math.min(scrollBounds.height(), maxSwipeDistancePerTime), steps);
+                int centerY = scrollBounds.centerY();
+                DeviceController.getInstance().swipe(centerX, centerY, centerX,
+                        Math.max(centerY - maxSwipeDistancePerTime, scrollBounds.top), steps);
             } else if (code == LEFT) {
                 // 从左边界向右
                 int centerY = scrollBounds.centerY();

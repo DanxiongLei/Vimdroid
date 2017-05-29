@@ -30,6 +30,8 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
 
     private UiDevice uiDevice;
 
+    private Rect screenRect;
+
     private Rect cacheRect;
 
     private int displayWidth, displayHeight;
@@ -68,6 +70,7 @@ class DeviceControllerService extends IDeviceController.Stub implements UiAutoma
         this.uiDevice = UiDevice.getInstance(instrumentation);
         this.displayWidth = uiDevice.getDisplayWidth();
         this.displayHeight = uiDevice.getDisplayHeight();
+        this.screenRect = new Rect(0, 0, displayWidth, displayHeight);
 //        this.uiAutomation.setOnAccessibilityEventListener(this);
 //        synchronized (updateTimeLock) {
 //            updateTime = System.currentTimeMillis();
